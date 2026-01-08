@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelos Técnicos Finales - Sistema de Citas Médicas</title>
+    <!-- Importar fuente Roboto para estilo profesional -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #f8fafc; padding: 40px; color: #334155; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Estilos de Tarjeta Profesional */
+        .diagram-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 50px;
+            padding: 30px;
+            border-left: 5px solid #2563eb; /* Borde azul técnico */
+        }
+
+        h1 { color: #0f172a; text-align: center; margin-bottom: 50px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { color: #1e293b; font-size: 1.4rem; margin-bottom: 15px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; }
+        p.desc { color: #64748b; margin-bottom: 20px; font-size: 0.95rem; }
+        
+        /* Contenedor del diagrama */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Nota de Especialista */
+        .specialist-note {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0369a1;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+        .specialist-note strong { font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Entregables de Arquitectura - Semana 13</h1>
+
+        <!-- 1. DIAGRAMA DE CASOS DE USO -->
+        <div class="diagram-card">
+            <h2>8.1 Diagrama de Casos de Uso (Nivel Experto)</h2>
+            <p class="desc">
+                Este diagrama muestra el alcance funcional exacto. Observa el recuadro "System Boundary" que delimita el software.
+                Las relaciones <code>&lt;&lt;include&gt;&gt;</code> indican procesos obligatorios.
+            </p>
+            
+            <div class="mermaid-container">
+                <div class="mermaid">
+                    usecaseDiagram
+                        %% Definición de Actores
+                        actor "Paciente" as P
+                        actor "Recepcionista" as R
+                        actor "Médico" as M
+                        actor "Administrador" as A
+
+                        %% Límite del Sistema (System Boundary)
+                        package "Sistema Web de Gestión de Citas (SIGECIT-MED)" {
+                            
+                            usecase "Autenticarse (Login)" as UC_Login
+                            
+                            %% Módulo de Citas
+                            usecase "Reservar Cita Médica" as UC_Reservar
+                            usecase "Buscar Disponibilidad" as UC_Buscar
+                            usecase "Cancelar Cita" as UC_Cancelar
+                            
+                            %% Módulo de Atención
+                            usecase "Gestionar Historia Clínica" as UC_Historia
+                            usecase "Consultar Agenda Diaria" as UC_Agenda
+                            
+                            %% Módulo Admin
+                            usecase "Gestionar Médicos y Horarios" as UC_Gestion
+                        }
+
+                        %% Relaciones Principales
+                        P --> UC_Reservar
+                        P --> UC_Buscar
+                        P --> UC_Cancelar
+                        
+                        R --> UC_Reservar : (Presencial/Teléfono)
+                        R --> UC_Cancelar
+                        
+                        M --> UC_Agenda
+                        M --> UC_Historia
+                        
+                        A --> UC_Gestion
+
+                        %% Relaciones Avanzadas (Include/Extend)
+                        %% Regla de Negocio: No se puede reservar sin loguearse ni sin buscar disponibilidad antes.
+                        UC_Reservar ..> UC_Login : <<include>>
+                        UC_Reservar ..> UC_Buscar : <<include>>
+                        UC_Historia ..> UC_Login : <<include>>
+                        UC_Gestion ..> UC_Login : <<include>>
+                        
+                        %% Regla: Cancelar cita requiere estar logueado
+                        UC_Cancelar ..> UC_Login : <<include>>
+                </div>
+            </div>
+            <div class="specialist-note">
+                <strong>Nota del Especialista:</strong> He aplicado la relación <code>&lt;&lt;include&gt;&gt;</code> entre "Reservar Cita" y "Buscar Disponibilidad". Esto es técnicamente correcto porque la búsqueda es un sub-proceso <strong>obligatorio</strong> e inseparable de la reserva (no puedes reservar algo que no has encontrado disponible).
+            </div>
+        </div>
+
+        <!-- 2. DIAGRAMA DE CLASES -->
+        <div class="diagram-card">
+            <h2>8.2 Diagrama de Clases (Estructura de Datos)</h2>
+            <p class="desc">Define las entidades, atributos con tipos de datos y cardinalidad exacta.</p>
+            
+            <div class="mermaid-container">
+                <div class="mermaid">
+                    classDiagram
+                        %% Clases
+                        class Usuario {
+                            +int id
+                            +String email
+                            +String password
+                            +String rol
+                            +boolean validarCredenciales()
+                        }
+
+                        class Paciente {
+                            +String dni
+                            +String nombres
+                            +String telefono
+                            +Date fechaNacimiento
+                            +verCitasPendientes()
+                        }
+
+                        class Medico {
+                            +String cmp
+                            +String especialidad
+                            +List~Horario~ horariosDisponibles
+                            +verAgenda()
+                        }
+
+                        class Cita {
+                            +int id
+                            +DateTime fechaHora
+                            +String estado
+                            +reservar()
+                            +cancelar()
+                        }
+
+                        class HistoriaClinica {
+                            +int id
+                            +String diagnostico
+                            +String receta
+                            +String observaciones
+                        }
+
+                        %% Relaciones
+                        Usuario <|-- Paciente : Herencia
+                        Usuario <|-- Medico : Herencia
+                        
+                        Paciente "1" --> "0..*" Cita : solicita
+                        Medico "1" --> "0..*" Cita : atiende
+                        
+                        Cita "1" *-- "0..1" HistoriaClinica : genera
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. DIAGRAMA DE SECUENCIA -->
+        <div class="diagram-card">
+            <h2>8.3 Diagrama de Secuencia (Validación Técnica)</h2>
+            <p class="desc">Detalle del flujo "Happy Path" y "Error Path" al reservar una cita.</p>
+            
+            <div class="mermaid-container">
+                <div class="mermaid">
+                    sequenceDiagram
+                        autonumber
+                        actor P as Paciente
+                        participant UI as Interfaz Web
+                        participant Ctrl as Backend (Controller)
+                        participant DB as Base de Datos
+
+                        P->>UI: Selecciona Médico y Horario
+                        UI->>Ctrl: POST /reservar (idPaciente, idHorario)
+                        
+                        rect rgb(255, 255, 240)
+                            note right of Ctrl: Validación Crítica (Atomicidad)
+                            Ctrl->>DB: verificarDisponibilidad(idHorario)
+                            DB-->>Ctrl: Estado: LIBRE
+                        end
+
+                        alt Horario Disponible
+                            Ctrl->>DB: INSERT Cita (Estado: CONFIRMADA)
+                            Ctrl->>DB: UPDATE Horario SET Estado: OCUPADO
+                            DB-->>Ctrl: OK, ID Cita creada
+                            Ctrl-->>UI: 200 OK (Reserva Exitosa)
+                            UI-->>P: Muestra constancia de reserva
+                        else Horario Ya Ocupado
+                            Ctrl-->>UI: 409 Conflict (Horario no disponible)
+                            UI-->>P: Error: "El horario acaba de ser tomado"
+                        end
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. DIAGRAMA BPMN -->
+        <div class="diagram-card">
+            <h2>8.4 Diagrama BPMN (Estilo Bizagi)</h2>
+            <p class="desc">Flujo de negocio completo con Carriles (Lanes) y Compuertas de decisión.</p>
+            
+            <div class="mermaid-container">
+                <div class="mermaid">
+                    graph TD
+                        %% Estilos Bizagi
+                        classDef inicio fill:#66BB6A,stroke:#2E7D32,color:white,rx:50,ry:50;
+                        classDef fin fill:#EF5350,stroke:#C62828,color:white,rx:50,ry:50;
+                        classDef tarea fill:#E3F2FD,stroke:#1E88E5,color:#0D47A1,rx:5,ry:5;
+                        classDef compuerta fill:#FFF9C4,stroke:#FBC02D,color:#F57F17,rhombus;
+
+                        subgraph Clinica [CENTRO MÉDICO SALUD TOTAL]
+                            
+                            subgraph P_Lane [Paciente]
+                                Start((Inicio)):::inicio --> A1[Llegada al Centro]:::tarea
+                                A1 --> G1{¿Tiene Cita?}:::compuerta
+                                G1 -- No --> A2[Solicitar Cita en Recepción]:::tarea
+                                G1 -- Sí --> A3[Esperar Atención]:::tarea
+                                A2 --> A3
+                                A4[Recibir Receta]:::tarea --> End((Fin)):::fin
+                            end
+
+                            subgraph R_Lane [Recepción]
+                                A2 -.-> R1[Verificar Disponibilidad]:::tarea
+                                R1 --> G2{¿Hay Cupo?}:::compuerta
+                                G2 -- Sí --> R2[Registrar Cita]:::tarea
+                                G2 -- No --> R3[Informar sin Cupo]:::tarea
+                                R2 -.-> A3
+                                R3 -.-> End
+                            end
+
+                            subgraph M_Lane [Médico]
+                                A3 -.-> M1[Llamar Paciente]:::tarea
+                                M1 --> M2[Realizar Consulta]:::tarea
+                                M2 --> M3[Registrar en Sistema]:::tarea
+                                M3 --> M4[Emitir Receta]:::tarea
+                                M4 -.-> A4
+                            end
+                        end
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Cargar Mermaid JS -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>
