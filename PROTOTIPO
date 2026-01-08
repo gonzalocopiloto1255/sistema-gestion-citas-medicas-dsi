@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGECIT-MED | Gestión de Citas</title>
+    <!-- Tailwind CSS (Estilos Modernos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos FontAwesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Animaciones suaves */
+      .fade-in {
+        animation: fadeIn 0.4s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-50 text-slate-800 font-sans h-screen overflow-hidden flex flex-col"
+  >
+    <!-- ==================== PANTALLA DE LOGIN ==================== -->
+    <section
+      id="view-login"
+      class="flex-1 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border-t-8 border-blue-600 fade-in"
+      >
+        <div class="text-center mb-8">
+          <div
+            class="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-full mb-4 text-blue-600"
+          >
+            <i class="fas fa-user-md text-4xl"></i>
+          </div>
+          <h1 class="text-3xl font-bold text-slate-800">SIGECIT-MED</h1>
+          <p class="text-slate-500">Acceso al Sistema de Citas</p>
+        </div>
+
+        <form onsubmit="app.login(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Usuario</label
+            >
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-slate-400"
+                ><i class="fas fa-user"></i
+              ></span>
+              <input
+                type="text"
+                id="login-user"
+                class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                placeholder="admin"
+                value="admin"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Contraseña</label
+            >
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-slate-400"
+                ><i class="fas fa-lock"></i
+              ></span>
+              <input
+                type="password"
+                class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                value="123456"
+                required
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition transform hover:scale-[1.02] shadow-md"
+          >
+            Ingresar
+          </button>
+        </form>
+        <div class="mt-6 text-center text-xs text-slate-400">
+          &copy; 2024 Centro Médico Salud Total
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DASHBOARD PRINCIPAL ==================== -->
+    <section
+      id="view-dashboard"
+      class="hidden flex-1 flex flex-col md:flex-row h-full"
+    >
+      <!-- SIDEBAR (Menú Lateral) -->
+      <aside
+        class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col shadow-lg z-10"
+      >
+        <div class="p-6 flex items-center gap-3 border-b border-slate-100">
+          <i class="fas fa-heartbeat text-blue-600 text-2xl"></i>
+          <span class="font-bold text-xl tracking-tight">Salud Total</span>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+          <p class="text-xs font-bold text-slate-400 uppercase px-4 mb-2">
+            Menú Principal
+          </p>
+          <button
+            onclick="app.nav('home')"
+            id="btn-home"
+            class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium"
+          >
+            <i class="fas fa-home w-6"></i> Inicio
+          </button>
+          <button
+            onclick="app.nav('reservar')"
+            id="btn-reservar"
+            class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium"
+          >
+            <i class="fas fa-calendar-plus w-6"></i> Nueva Cita
+          </button>
+          <button
+            onclick="app.nav('agenda')"
+            id="btn-agenda"
+            class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium"
+          >
+            <i class="fas fa-list-alt w-6"></i> Mis Citas
+          </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100">
+          <div class="flex items-center gap-3 mb-4 px-2">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold"
+            >
+              U
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-800" id="user-name">
+                Usuario
+              </p>
+              <p class="text-xs text-slate-500">Conectado</p>
+            </div>
+          </div>
+          <button
+            onclick="app.logout()"
+            class="w-full border border-red-200 text-red-600 hover:bg-red-50 py-2 rounded-lg text-sm font-medium transition"
+          >
+            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
+      <!-- ÁREA DE CONTENIDO -->
+      <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 relative">
+        <!-- VISTA: HOME -->
+        <div id="content-home" class="view-content fade-in space-y-6">
+          <header class="flex justify-between items-end mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-800">
+                Panel de Control
+              </h2>
+              <p class="text-slate-500">Bienvenido al sistema de gestión.</p>
+            </div>
+            <span
+              class="text-sm bg-blue-100 text-blue-800 py-1 px-3 rounded-full font-medium"
+              id="date-display"
+              >Hoy</span
+            >
+          </header>
+
+          <!-- Tarjetas de Estadísticas -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+            >
+              <div>
+                <p class="text-sm text-slate-500 font-medium">Citas Hoy</p>
+                <h3 class="text-3xl font-bold text-slate-800" id="stat-hoy">
+                  0
+                </h3>
+              </div>
+              <div
+                class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl"
+              >
+                <i class="fas fa-calendar-day"></i>
+              </div>
+            </div>
+            <div
+              class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+            >
+              <div>
+                <p class="text-sm text-slate-500 font-medium">
+                  Total Pacientes
+                </p>
+                <h3 class="text-3xl font-bold text-slate-800">1,240</h3>
+              </div>
+              <div
+                class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl"
+              >
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div
+              class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+            >
+              <div>
+                <p class="text-sm text-slate-500 font-medium">Disponibilidad</p>
+                <h3 class="text-3xl font-bold text-slate-800">85%</h3>
+              </div>
+              <div
+                class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl"
+              >
+                <i class="fas fa-chart-pie"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla Resumen -->
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+          >
+            <div
+              class="p-6 border-b border-slate-100 flex justify-between items-center"
+            >
+              <h3 class="font-bold text-lg text-slate-800">Próximas Citas</h3>
+              <button
+                onclick="app.nav('reservar')"
+                class="text-sm text-blue-600 font-medium hover:underline"
+              >
+                Nueva Reserva +
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 uppercase font-medium">
+                  <tr>
+                    <th class="p-4">Paciente</th>
+                    <th class="p-4">Médico</th>
+                    <th class="p-4">Fecha</th>
+                    <th class="p-4 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="table-home-body" class="divide-y divide-slate-100">
+                  <!-- Se llena con JS -->
+                </tbody>
+              </table>
+              <div
+                id="empty-state-home"
+                class="p-8 text-center text-slate-400 hidden"
+              >
+                <i class="fas fa-calendar-times text-4xl mb-3"></i>
+                <p>No hay citas registradas recientemente.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA: RESERVAR -->
+        <div
+          id="content-reservar"
+          class="view-content hidden fade-in max-w-2xl mx-auto"
+        >
+          <div
+            class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden"
+          >
+            <div class="bg-blue-600 p-6 text-white">
+              <h2 class="text-xl font-bold">Reservar Nueva Cita</h2>
+              <p class="text-blue-100 text-sm">
+                Complete el formulario para agendar.
+              </p>
+            </div>
+            <div class="p-8">
+              <form onsubmit="app.guardarCita(event)" class="space-y-6">
+                <!-- Paso 1: Datos Paciente -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"
+                      >DNI Paciente</label
+                    >
+                    <input
+                      type="text"
+                      id="res-dni"
+                      class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none"
+                      placeholder="Ingrese DNI"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"
+                      >Nombre Completo</label
+                    >
+                    <input
+                      type="text"
+                      id="res-nombre"
+                      class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none"
+                      placeholder="Nombre Apellido"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <!-- Paso 2: Datos Médicos (Dinámico) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"
+                      >Especialidad</label
+                    >
+                    <select
+                      id="res-esp"
+                      onchange="app.cargarMedicos()"
+                      class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none"
+                      required
+                    >
+                      <option value="">Seleccione...</option>
+                      <option value="Medicina General">Medicina General</option>
+                      <option value="Cardiología">Cardiología</option>
+                      <option value="Pediatría">Pediatría</option>
+                      <option value="Dermatología">Dermatología</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"
+                      >Médico</label
+                    >
+                    <select
+                      id="res-med"
+                      class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                      disabled
+                      required
+                    >
+                      <option value="">Elija especialidad primero</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Paso 3: Fecha -->
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 mb-2"
+                    >Fecha y Hora Preferida</label
+                  >
+                  <input
+                    type="datetime-local"
+                    id="res-fecha"
+                    class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none"
+                    required
+                  />
+                </div>
+
+                <div class="pt-4 flex gap-4">
+                  <button
+                    type="button"
+                    onclick="app.nav('home')"
+                    class="flex-1 py-3 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg transition transform hover:-translate-y-1"
+                  >
+                    Confirmar Cita
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA: AGENDA (LISTA) -->
+        <div id="content-agenda" class="view-content hidden fade-in">
+          <h2 class="text-2xl font-bold text-slate-800 mb-6">
+            Agenda Completa
+          </h2>
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+          >
+            <div id="lista-citas-container" class="space-y-4">
+              <!-- Citas inyectadas aquí -->
+            </div>
+            <div
+              id="empty-agenda"
+              class="text-center py-10 text-slate-400 hidden"
+            >
+              <i class="fas fa-folder-open text-5xl mb-4 text-slate-200"></i>
+              <p>No hay citas en la agenda.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- TOAST NOTIFICATION -->
+    <div
+      id="toast"
+      class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-3 z-50"
+    >
+      <div
+        class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs"
+      >
+        <i class="fas fa-check"></i>
+      </div>
+      <div>
+        <h4 class="font-bold text-sm">Éxito</h4>
+        <p class="text-xs text-slate-300" id="toast-msg">
+          Operación realizada.
+        </p>
+      </div>
+    </div>
+
+    <!-- LOGICA JAVASCRIPT -->
+    <script>
+      const app = {
+        // Datos simulados
+        dbMedicos: {
+          "Medicina General": ["Dr. Juan Pérez", "Dra. Laura Torres"],
+          Cardiología: ["Dr. Roberto Silva", "Dra. Ana Gómez"],
+          Pediatría: ["Dra. Carla Ruiz", "Dr. Mario Bross"],
+          Dermatología: ["Dr. Luis Soto"],
+        },
+        citas: [], // Se llenará desde localStorage
+
+        init: function () {
+          // Cargar citas guardadas
+          const stored = localStorage.getItem("citas_medicas_db");
+          if (stored) this.citas = JSON.parse(stored);
+
+          // Poner fecha actual
+          const options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          };
+          document.getElementById("date-display").innerText =
+            new Date().toLocaleDateString("es-ES", options);
+
+          this.renderHome();
+        },
+
+        login: function (e) {
+          e.preventDefault();
+          const user = document.getElementById("login-user").value;
+          if (user) {
+            document.getElementById("user-name").innerText = user;
+            document.getElementById("view-login").classList.add("hidden");
+            document
+              .getElementById("view-dashboard")
+              .classList.remove("hidden");
+            this.init(); // Iniciar datos
+          }
+        },
+
+        logout: function () {
+          if (confirm("¿Cerrar sesión?")) {
+            location.reload();
+          }
+        },
+
+        nav: function (page) {
+          // Ocultar todo
+          document
+            .querySelectorAll(".view-content")
+            .forEach((el) => el.classList.add("hidden"));
+          document.querySelectorAll(".nav-btn").forEach((el) => {
+            el.classList.remove("bg-blue-50", "text-blue-700");
+            el.classList.add("text-slate-600");
+          });
+
+          // Mostrar seleccionado
+          document.getElementById("content-" + page).classList.remove("hidden");
+
+          // Activar botón
+          const btn = document.getElementById("btn-" + page);
+          if (btn) {
+            btn.classList.add("bg-blue-50", "text-blue-700");
+            btn.classList.remove("text-slate-600");
+          }
+
+          if (page === "home") this.renderHome();
+          if (page === "agenda") this.renderAgenda();
+        },
+
+        cargarMedicos: function () {
+          const esp = document.getElementById("res-esp").value;
+          const selectMed = document.getElementById("res-med");
+
+          selectMed.innerHTML =
+            '<option value="">Seleccione médico...</option>';
+
+          if (esp && this.dbMedicos[esp]) {
+            selectMed.disabled = false;
+            this.dbMedicos[esp].forEach((med) => {
+              const opt = document.createElement("option");
+              opt.value = med;
+              opt.innerText = med;
+              selectMed.appendChild(opt);
+            });
+          } else {
+            selectMed.disabled = true;
+          }
+        },
+
+        guardarCita: function (e) {
+          e.preventDefault();
+          const nuevaCita = {
+            id: Date.now(),
+            paciente: document.getElementById("res-nombre").value,
+            dni: document.getElementById("res-dni").value,
+            especialidad: document.getElementById("res-esp").value,
+            medico: document.getElementById("res-med").value,
+            fecha: document.getElementById("res-fecha").value,
+            estado: "Pendiente",
+          };
+
+          this.citas.unshift(nuevaCita); // Agregar al inicio
+          this.persistir();
+
+          this.showToast("Cita reservada correctamente");
+          e.target.reset(); // Limpiar form
+          this.nav("home");
+        },
+
+        renderHome: function () {
+          const tbody = document.getElementById("table-home-body");
+          tbody.innerHTML = "";
+
+          // Mostrar solo las ultimas 5
+          const ultimas = this.citas.slice(0, 5);
+
+          document.getElementById("stat-hoy").innerText = this.citas.length;
+
+          if (ultimas.length === 0) {
+            document
+              .getElementById("empty-state-home")
+              .classList.remove("hidden");
+          } else {
+            document.getElementById("empty-state-home").classList.add("hidden");
+            ultimas.forEach((c) => {
+              const dateObj = new Date(c.fecha);
+              const fechaStr =
+                dateObj.toLocaleDateString() +
+                " " +
+                dateObj.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+
+              const row = `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 font-bold text-slate-700">${c.paciente} <br> <span class="text-xs font-normal text-slate-400">DNI: ${c.dni}</span></td>
+                                <td class="p-4">${c.medico} <br> <span class="text-xs text-blue-500">${c.especialidad}</span></td>
+                                <td class="p-4 text-slate-600">${fechaStr}</td>
+                                <td class="p-4 text-center">
+                                    <span class="bg-yellow-100 text-yellow-700 py-1 px-3 rounded-full text-xs font-bold">Pendiente</span>
+                                </td>
+                            </tr>
+                        `;
+              tbody.innerHTML += row;
+            });
+          }
+        },
+
+        renderAgenda: function () {
+          const container = document.getElementById("lista-citas-container");
+          container.innerHTML = "";
+
+          if (this.citas.length === 0) {
+            document.getElementById("empty-agenda").classList.remove("hidden");
+          } else {
+            document.getElementById("empty-agenda").classList.add("hidden");
+            this.citas.forEach((c) => {
+              const dateObj = new Date(c.fecha);
+              const card = `
+                            <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl hover:shadow-md transition">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm border">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">${
+                                          c.paciente
+                                        }</h4>
+                                        <p class="text-sm text-slate-500">${
+                                          c.especialidad
+                                        } - ${c.medico}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-slate-700">${dateObj.toLocaleDateString()}</p>
+                                    <p class="text-sm text-slate-500">${dateObj.toLocaleTimeString(
+                                      [],
+                                      { hour: "2-digit", minute: "2-digit" }
+                                    )}</p>
+                                </div>
+                            </div>
+                        `;
+              container.innerHTML += card;
+            });
+          }
+        },
+
+        persistir: function () {
+          localStorage.setItem("citas_medicas_db", JSON.stringify(this.citas));
+        },
+
+        showToast: function (msg) {
+          const t = document.getElementById("toast");
+          document.getElementById("toast-msg").innerText = msg;
+          t.classList.remove("translate-y-24", "opacity-0");
+          setTimeout(
+            () => t.classList.add("translate-y-24", "opacity-0"),
+            3000
+          );
+        },
+      };
+    </script>
+  </body>
+</html>
